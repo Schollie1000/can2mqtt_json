@@ -1,0 +1,186 @@
+{
+    "can2mqtt": [
+        {
+            "topic": "clock",
+            "canid": "0x5",
+            "length": 8,
+            "payload": [
+                {
+                    "key": "unixtime",
+                    "type": "unixtime",
+                    "place": [
+                        0,
+                        0
+                    ],
+                    "factor": 1
+                }
+            ]
+            
+        },
+        {
+            "topic": "test/test",
+            "canid": "0xFF",
+            "length": 8,
+            "payload": [
+                {
+                    "key": "torque",
+                    "type": "int16_t",
+                    "place": [
+                        0,
+                        2
+                    ],
+                    "factor": 0.001666
+                },
+                {
+                    "key": "rpm",
+                    "type": "int16_t",
+                    "place": [
+                        2,
+                        4
+                    ],
+                    "factor": 1
+                },
+                {
+                    "key": "t",
+                    "type": "float",
+                    "place": [
+                        4,
+                        8
+                    ],
+                    "factor": 1
+                }
+            ]
+            
+        },
+        {
+            "topic": "test/test2",
+            "canid": "0xF1",
+            "length": 8,
+            "payload": [
+                {
+                    "key": "test1",
+                    "type": "float",
+                    "place": [
+                        0,
+                        4
+                    ],
+                    "factor": 100
+                },
+                {
+                    "key": "test2",
+                    "type": "uint32",
+                    "place": [
+                        4,
+                        8
+                    ],
+                    "factor": 0.6
+                }
+            ]
+            
+        },
+        {
+            "topic": "test/byte",
+            "canid": "0xF2",
+            "length": 8,
+            "payload": [
+                {
+                    "key": "test1",
+                    "type": "byte",
+                    "place": [
+                        0,
+                        4
+                    ],
+                    "factor": 0
+                },
+                {
+                    "key": "test2",
+                    "type": "float",
+                    "place": [
+                        4,
+                        8
+                    ],
+                    "factor": 0.6
+                }
+            ]
+            
+        }
+    ],
+    "mqtt2can": [
+        {
+            "topic": "test/byte",
+            "canid": "0xF2",
+            "length": 8,
+            "payload": [
+                {
+                    "key": "test1",
+                    "type": "byte",
+                    "place": [
+                        0,
+                        4
+                    ],
+                    "factor": 0
+                },
+                {
+                    "key": "test2",
+                    "type": "float",
+                    "place": [
+                        4,
+                        8
+                    ],
+                    "factor": 0.6
+                }
+            ]
+            
+        },
+        {
+            "topic": "test/test",
+            "canid": "0xFF",
+            "length": 8,
+            "payload": [
+                {
+                    "key": "test",
+                    "type": "float",
+                    "place": [
+                        0,
+                        3
+                    ],
+                    "factor": 1
+                },
+                {
+                    "key": "test2",
+                    "type": "float",
+                    "place": [
+                        4,
+                        7
+                    ],
+                    "factor": 1
+                }
+            ]
+        },
+        {
+            "topic": "test/byte",
+            "canid": "0xFF",
+            "length": 8,
+            "payload": [
+                {
+                    "key": "test",
+                    "type": "byte",
+                    "place": [
+                        0,
+                        3
+                    ],
+                    "factor": 1
+                },
+                {
+                    "key": "test2",
+                    "type": "float",
+                    "place": [
+                        4,
+                        7
+                    ],
+                    "factor": 1
+                }
+            ]
+        }
+    ]
+}
