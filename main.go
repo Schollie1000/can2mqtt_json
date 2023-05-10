@@ -1,33 +1,88 @@
 package can2mqtt_json
 
 import (
-	"bufio"        // Reader
-	"encoding/csv" // CSV Management
-	"fmt"          // print :)
-	"io"           // EOF const
-	"log"          // error management
-	"os"           // open files
-	"strconv"      // parse strings
+	//"bufio"        // Reader
+	//"encoding/csv" // CSV Management
+	//"encoding/binary"
+	"encoding/json"
+	"fmt" // print :)
+	"io/ioutil"
+
+	//"io"           // EOF const
+	"log"     // error management
+	"os"      // open files
+	"strconv" // parse strings
+	"strings"
 	"sync"
 )
 
-// can2mqtt is a struct that represents the internal type of
-// one line of the can2mqtt.json file. It has
-// the same three fields as the can2mqtt.csv file: CAN-ID,
-// conversion method and MQTT-Topic.
-type can2mqtt struct {
-	canId      int
-	convMethod string
-	mqttTopic  string
+// Generic CAN Frame
+
+type Frame struct {
+	// bit 0-28: CAN identifier (11/29 bit)
+	// bit 29: error message flag (ERR)
+	// bit 30: remote transmision request (RTR)
+	// bit 31: extended frame format (EFF)
+	ID     uint32
+	Length uint8
+	Flags  uint8
+	Res0   uint8
+	Res1   uint8
+	Data   [8]uint8 // !!! hier für CAN FD -> max Framelength angeben  TODO
 }
 
-var pairFromID map[int]*can2mqtt       // c2m pair (lookup from ID)
-var pairFromTopic map[string]*can2mqtt // c2m pair (lookup from Topic)
-var dbg = false                        // verbose on off [-v]
-var ci = "can0"                        // the CAN-Interface [-c]
-var cs = "tcp://localhost:1883"        // mqtt-connect-string [-m]
-var c2mf = "can2mqtt.json"             // path to the can2mqtt.json [-f]
-var dirMode = 0                        // directional modes: 0=bidirectional 1=can2mqtt only 2=mqtt2can only [-d]
+// Conversion Method
+// Key identefies the data in json
+// Type is for conversion Method
+// Place says where the Data is inside the 8 byte array of canframe
+// Factor is for calibrating ... maybe a offset is needet aswell TODO
+
+type PayloadField struct {
+	Key    string  `json:"key"`
+	Type   string  `json:"type"`
+	Place  [2]int  `json:"place"`
+	Factor float64 `json:"factor"`
+}
+
+// stores all conversion for a frame
+
+type Payload struct {
+	Fields []PayloadField `json:"payload"`
+}
+
+// All nessesary data for Frame
+
+type Conversion struct {
+	Topic   string         `json:"topic"`
+	CanID   string         `json:"canid"`
+	Length  int            `json:"length"`
+	Payload []PayloadField `json:"payload"`
+}
+
+// list for the two directions
+
+type Config struct {
+	Can2mqtt []Conversion `json:"can2mqtt"`
+	Mqtt2can []Conversion `json:"mqtt2can"`
+}
+
+// whast going out from mqtt2can function
+
+type mqtt_response struct {
+	Topic   string
+	Payload string
+}
+
+var config Config     // all config inside
+var last_clock string // the last timestamp from dataquerry
+
+// var pairFromID map[int]*can2mqtt       // c2m pair (lookup from ID)
+// var pairFromTopic map[string]*can2mqtt // c2m pair (lookup from Topic)
+var dbg = false                 // verbose on off [-v]
+var ci = "can0"                 // the CAN-Interface [-c]
+var cs = "tcp://localhost:1883" // mqtt-connect-string [-m]
+var c2mf = "can2mqtt.json"      // path to the can2mqtt.json [-f]
+var dirMode = 0                 // directional modes: 0=bidirectional 1=can2mqtt only 2=mqtt2can only [-d]
 var wg sync.WaitGroup
 
 // SetDbg decides whether there is really verbose output or
@@ -112,39 +167,75 @@ func readC2MPFromFile(filename string) {
 		log.Fatal(err)
 	}
 
-	r := csv.NewReader(bufio.NewReader(file))
-	pairFromID = make(map[int]*can2mqtt)
-	pairFromTopic = make(map[string]*can2mqtt)
-	for {
-		record, err := r.Read()
-		// Stop at EOF.
-		if err == io.EOF {
-			break
-		}
-		canID, err := strconv.Atoi(record[0])
-		convMode := record[1]
-		topic := record[2]
-		if isInSlice(canID, topic) {
-			panic("main: each ID and each topic is only allowed once!")
-		}
-		pairFromID[canID] = &can2mqtt{
-			canId:      canID,
-			convMethod: convMode,
-			mqttTopic:  topic,
-		}
-		pairFromTopic[topic] = pairFromID[canID]
-		mqttSubscribe(topic)        // TODO move to append function
-		canSubscribe(uint32(canID)) // TODO move to append function
+	// Parsing Json
+
+	// Decode the JSON data into a struct
+	byteValue, _ := ioutil.ReadAll(file)
+
+	// Write json as config
+	json.Unmarshal(byteValue, &config)
+
+	// subscribing to all MQTT topics
+
+	for _, topic_tmp := range config.Mqtt2can {
+		mqttSubscribe(topic_tmp.Topic)
 	}
+
+	for _, canid_tmp := range config.Mqtt2can {
+		hexStr := canid_tmp.CanID
+		if strings.HasPrefix(hexStr, "0x") {
+			hexStr = strings.TrimPrefix(hexStr, "0x")
+		}
+
+		i, err := strconv.ParseUint(hexStr, 16, 32)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		canSubscribe(uint32(i))
+	}
+
+	/*
+		//r := csv.NewReader(bufio.NewReader(file))
+		//pairFromID = make(map[int]*can2mqtt)
+		//pairFromTopic = make(map[string]*can2mqtt)
+		for {
+			//record, err := r.Read()
+			// Stop at EOF.
+			//if err == io.EOF {
+			//	break
+			//}
+			//canID, err := strconv.Atoi(record[0])
+			convMode := record[1]
+			topic := record[2]
+			if isInSlice(canID, topic) {
+				panic("main: each ID and each topic is only allowed once!")
+			}
+			pairFromID[canID] = &can2mqtt{
+				canId:      canID,
+				convMethod: convMode,
+				mqttTopic:  topic,
+			}
+			pairFromTopic[topic] = pairFromID[canID]
+			mqttSubscribe(topic)        // TODO move to append function
+			canSubscribe(uint32(canID)) // TODO move to append function
+		}
+	*/
 	if dbg {
 		fmt.Printf("main: the following CAN-MQTT pairs have been extracted:\n")
-		fmt.Printf("main: CAN-ID\t\t conversion mode\t\tMQTT-topic\n")
-		for _, c2mp := range pairFromID {
-			fmt.Printf("main: %d\t\t%s\t\t%s\n", c2mp.canId, c2mp.convMethod, c2mp.mqttTopic)
+		fmt.Printf("Config for can2mqtt\n")
+		for _, msg := range config.Can2mqtt {
+			fmt.Println(msg.CanID, "\t\t", msg.Topic, "\t\t", msg.Payload)
+		}
+		fmt.Printf("Config for mqtt2can\n")
+		for _, msg := range config.Mqtt2can {
+			fmt.Println(msg.CanID, "\t\t", msg.Topic, "\t\t", msg.Payload)
 		}
 	}
+
 }
 
+/*
 // check function to check if a topic or an ID is in the slice
 func isInSlice(canId int, mqttTopic string) bool {
 	if pairFromID[canId] != nil {
@@ -181,3 +272,4 @@ func getConvModeFromId(canId int) string {
 func getTopicFromId(canId int) string {
 	return pairFromID[canId].mqttTopic
 }
+*/
