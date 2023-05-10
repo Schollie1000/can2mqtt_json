@@ -58,7 +58,15 @@ func getPayloadconv(config *Config, id string, mode string) (*Payload, string) {
 		}
 	}
 	fmt.Println("No matching conversion found in Can2mqtt")
-	return nil, ""
+	errorPay := Payload{}
+	errorField := PayloadField{
+		Key:    "error",
+		Type:   "error",
+		Place:  [2]int{0, 0},
+		Factor: 0,
+	}
+	errorPay.Fields = append(errorPay.Fields, errorField)
+	return &errorPay, ""
 }
 
 func convert2MQTT(id int, length int, payload [8]byte) mqtt_response {
@@ -69,8 +77,9 @@ func convert2MQTT(id int, length int, payload [8]byte) mqtt_response {
 	var valstring string
 	for _, field := range conv.Fields {
 		valstring = ""
-
-		if field.Type == "unixtime" {
+		if field.Type == "error" {
+			valstring = "error"
+		} else if field.Type == "unixtime" {
 			unix := uint32(payload[0]) | uint32(payload[1])<<8 | uint32(payload[2])<<16 | uint32(payload[3])<<24
 			ms := uint32(payload[4]) | uint32(payload[5])<<8 | uint32(payload[6])<<16 | uint32(payload[7])<<24
 			valstring = fmt.Sprintf("%d.%d", unix, ms)

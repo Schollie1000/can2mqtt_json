@@ -38,6 +38,6 @@ func handleMQTT(_ MQTT.Client, msg MQTT.Message) {
 
 	if dirMode != 1 {
 		canPublish(cf)
-		fmt.Printf("ID: %d len: %d data: %X <- topic: \"%s\" message: \"%s\"\n", cf.ID, cf.Length, cf.Data, msg.Topic(), msg.Payload())
+		fmt.Printf("ID: %x len: %d data: %X <- topic: \"%s\" message: \"%s\"\n", cf.ID, cf.Length, cf.Data, msg.Topic(), msg.Payload())
 	}
 }
