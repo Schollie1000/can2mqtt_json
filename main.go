@@ -181,7 +181,7 @@ func readC2MPFromFile(filename string) {
 		mqttSubscribe(topic_tmp.Topic)
 	}
 
-	for _, canid_tmp := range config.Mqtt2can {
+	for _, canid_tmp := range config.Can2mqtt {
 		hexStr := canid_tmp.CanID
 		if strings.HasPrefix(hexStr, "0x") {
 			hexStr = strings.TrimPrefix(hexStr, "0x")
