@@ -193,6 +193,9 @@ func readC2MPFromFile(filename string) {
 			return
 		}
 		canSubscribe(uint32(i))
+		if dbg {
+			fmt.Printf("subscribed to :%x \n", i)
+		}
 	}
 
 	/*

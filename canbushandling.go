@@ -45,7 +45,7 @@ func handleCANFrame(frame can.Frame) {
 	for _, i := range csi {
 		if i == frame.ID {
 			if dbg {
-				fmt.Printf("canbushandler: ID %d is in subscribed list, calling receivehadler.\n", frame.ID)
+				fmt.Printf("canbushandler: ID %x is in subscribed list, calling receivehadler.\n", frame.ID)
 			}
 			go handleCAN(frame)
 			idSub = true
@@ -54,7 +54,7 @@ func handleCANFrame(frame can.Frame) {
 	}
 	if !idSub {
 		if dbg {
-			fmt.Printf("canbushandler: ID:%d was not subscribed. /dev/nulled that frame...\n", frame.ID)
+			fmt.Printf("canbushandler: ID:%x was not subscribed. /dev/nulled that frame...\n", frame.ID)
 		}
 	}
 }
