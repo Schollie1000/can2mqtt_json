@@ -191,8 +191,8 @@ func convert2MQTT(id int, length int, payload [8]byte) mqtt_response {
 	if topic != "clock" {
 		retstr = retstr + "\"unixtime\" : " + last_clock
 	}
-	if strings.HasSuffix(retstr, ",") {
-		retstr = strings.TrimRight(retstr, ",")
+	if strings.HasSuffix(retstr, ", ") {
+		retstr = strings.TrimRight(retstr, ", ")
 	}
 	retstr = retstr + "}"
 	res := mqtt_response{}
