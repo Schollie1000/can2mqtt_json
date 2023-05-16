@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"strconv"
 
-	//"strings"
 	"math"
+	"strings"
 
 	"github.com/brutella/can"
 )
@@ -189,7 +189,10 @@ func convert2MQTT(id int, length int, payload [8]byte) mqtt_response {
 		retstr = retstr + "\"" + field.Key + "\" : " + valstring + ", "
 	}
 	if topic != "clock" {
-		retstr = retstr + "\"timestamp\" : " + last_clock
+		retstr = retstr + "\"unixtime\" : " + last_clock
+	}
+	if strings.HasSuffix(retstr, ",") {
+		retstr = strings.TrimRight(retstr, ",")
 	}
 	retstr = retstr + "}"
 	res := mqtt_response{}
