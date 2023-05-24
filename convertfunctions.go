@@ -249,7 +249,7 @@ func convert2CAN(topic, payload string) can.Frame {
 					//fmt.Printf("Type of %f  is %T   %f is %T\n", value, value, field.Factor, field.Factor)
 					if field.Type == "uint8_t" {
 						f64 := f * field.Factor
-						u8 := uint8(f64 * 255.0 / math.MaxFloat64)
+						u8 := uint8(f64)
 						buffer[field.Place[0]] = u8
 						if dbg {
 							fmt.Printf("f %f to %f to int %d \n", f, f64, u8)
@@ -257,7 +257,7 @@ func convert2CAN(topic, payload string) can.Frame {
 
 					} else if field.Type == "int8_t" {
 						f64 := f * field.Factor
-						i8 := int8(f64 * 127.0 / math.MaxFloat64)
+						i8 := int8(f64)
 						buffer[field.Place[0]] = byte(i8)
 						if dbg {
 							fmt.Printf("f %f to %f to int %d \n", f, f64, i8)
@@ -265,7 +265,7 @@ func convert2CAN(topic, payload string) can.Frame {
 
 					} else if field.Type == "uint16_t" {
 						f64 := f * field.Factor
-						u16 := uint16(f64 * 65535.0 / math.MaxFloat64)
+						u16 := uint16(f64)
 						b := make([]byte, 2)
 						binary.LittleEndian.PutUint16(b, u16)
 						for i := 0; i < len(b); i++ {
@@ -277,7 +277,7 @@ func convert2CAN(topic, payload string) can.Frame {
 
 					} else if field.Type == "int16_t" {
 						f64 := f * field.Factor
-						i16 := int16(f64 * 32767.0 / math.MaxFloat64)
+						i16 := int16(f64)
 						b := make([]byte, 2)
 						binary.LittleEndian.PutUint16(b, uint16(i16))
 						for i := 0; i < len(b); i++ {
@@ -288,7 +288,7 @@ func convert2CAN(topic, payload string) can.Frame {
 						}
 					} else if field.Type == "uint32_t" {
 						f64 := f * field.Factor
-						u32 := uint32(f64 * float64(math.MaxUint32))
+						u32 := uint32(f64)
 						b := make([]byte, 4)
 						binary.LittleEndian.PutUint32(b, u32)
 						for i := 0; i < len(b); i++ {
@@ -299,7 +299,7 @@ func convert2CAN(topic, payload string) can.Frame {
 						}
 					} else if field.Type == "int32_t" {
 						f64 := f * field.Factor
-						i32 := int32(f64 * float64(math.MaxUint32))
+						i32 := int32(f64)
 						b := make([]byte, 4)
 						binary.LittleEndian.PutUint32(b, uint32(i32))
 						for i := 0; i < len(b); i++ {
