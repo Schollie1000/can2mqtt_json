@@ -267,7 +267,7 @@ func convert2CAN(topic, payload string) can.Frame {
 						f64 := f * field.Factor
 						u16 := uint16(f64)
 						b := make([]byte, 2)
-						binary.LittleEndian.PutUint16(b, u16)
+						binary.BigEndian.PutUint16(b, u16)
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
 						}
@@ -279,7 +279,7 @@ func convert2CAN(topic, payload string) can.Frame {
 						f64 := f * field.Factor
 						i16 := int16(f64)
 						b := make([]byte, 2)
-						binary.LittleEndian.PutUint16(b, uint16(i16))
+						binary.BigEndian.PutUint16(b, uint16(i16))
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
 						}
@@ -290,7 +290,7 @@ func convert2CAN(topic, payload string) can.Frame {
 						f64 := f * field.Factor
 						u32 := uint32(f64)
 						b := make([]byte, 4)
-						binary.LittleEndian.PutUint32(b, u32)
+						binary.BigEndian.PutUint32(b, u32)
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
 						}
@@ -301,7 +301,7 @@ func convert2CAN(topic, payload string) can.Frame {
 						f64 := f * field.Factor
 						i32 := int32(f64)
 						b := make([]byte, 4)
-						binary.LittleEndian.PutUint32(b, uint32(i32))
+						binary.BigEndian.PutUint32(b, uint32(i32))
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
 						}
@@ -312,7 +312,7 @@ func convert2CAN(topic, payload string) can.Frame {
 						f64 := f * field.Factor
 						f32 := float32(f64)
 						b := make([]byte, 4)
-						binary.LittleEndian.PutUint32(b, math.Float32bits(f32))
+						binary.BigEndian.PutUint32(b, math.Float32bits(f32))
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
 						}
