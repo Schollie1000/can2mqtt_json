@@ -217,11 +217,11 @@ func convert2CAN(topic, payload string) can.Frame {
 
 	for _, field := range conv.Fields {
 		if dbg {
-			fmt.Println("Key to find ", field.Key)
+			//fmt.Println("Key to find ", field.Key)
 		}
 		for key, value := range data {
 			if dbg {
-				fmt.Println("Key:", key, " val ", value)
+				//fmt.Println("Key:", key, " val ", value)
 			}
 			if key == field.Key {
 				if dbg {
@@ -251,11 +251,17 @@ func convert2CAN(topic, payload string) can.Frame {
 						f64 := f * field.Factor
 						u8 := uint8(f64 * 255.0 / math.MaxFloat64)
 						buffer[field.Place[0]] = u8
+						if dbg {
+							fmt.Printf("f %f to %f to int %d \n", f, f64, u8)
+						}
 
 					} else if field.Type == "int8_t" {
 						f64 := f * field.Factor
 						i8 := int8(f64 * 127.0 / math.MaxFloat64)
 						buffer[field.Place[0]] = byte(i8)
+						if dbg {
+							fmt.Printf("f %f to %f to int %d \n", f, f64, i8)
+						}
 
 					} else if field.Type == "uint16_t" {
 						f64 := f * field.Factor
@@ -264,6 +270,9 @@ func convert2CAN(topic, payload string) can.Frame {
 						binary.LittleEndian.PutUint16(b, u16)
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
+						}
+						if dbg {
+							fmt.Printf("f %f to %f to int %d \n", f, f64, u16)
 						}
 
 					} else if field.Type == "int16_t" {
@@ -274,6 +283,9 @@ func convert2CAN(topic, payload string) can.Frame {
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
 						}
+						if dbg {
+							fmt.Printf("f %f to %f to int %d \n", f, f64, i16)
+						}
 					} else if field.Type == "uint32_t" {
 						f64 := f * field.Factor
 						u32 := uint32(f64 * float64(math.MaxUint32))
@@ -281,6 +293,9 @@ func convert2CAN(topic, payload string) can.Frame {
 						binary.LittleEndian.PutUint32(b, u32)
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
+						}
+						if dbg {
+							fmt.Printf("f %f to %f to int %d \n", f, f64, u32)
 						}
 					} else if field.Type == "int32_t" {
 						f64 := f * field.Factor
@@ -290,6 +305,9 @@ func convert2CAN(topic, payload string) can.Frame {
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
 						}
+						if dbg {
+							fmt.Printf("f %f to %f to int %d \n", f, f64, i32)
+						}
 					} else if field.Type == "float" {
 						f64 := f * field.Factor
 						f32 := float32(f64)
@@ -297,6 +315,9 @@ func convert2CAN(topic, payload string) can.Frame {
 						binary.LittleEndian.PutUint32(b, math.Float32bits(f32))
 						for i := 0; i < len(b); i++ {
 							buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
+						}
+						if dbg {
+							fmt.Printf("f %f to %f to flo %f \n", f, f64, f32)
 						}
 					} else {
 						fmt.Println("error conv instruction")
