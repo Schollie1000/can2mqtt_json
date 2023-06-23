@@ -69,7 +69,7 @@ func getPayloadconv(config *Config, id string, mode string) (*Payload, string) {
 	return &errorPay, ""
 }
 
-func convert2MQTT(id int, length int, payload [8]byte) mqtt_response {
+func convert2MQTT(id int, length int, payload [24]byte) mqtt_response {
 	idStr := fmt.Sprintf("0x%X", id)
 	fmt.Printf("id = %s\n", idStr)
 	conv, topic := getPayloadconv(&config, idStr, "can2mqtt")
@@ -213,7 +213,7 @@ func convert2CAN(topic, payload string) can.Frame {
 		fmt.Println(err)
 	}
 
-	var buffer [8]uint8
+	var buffer [24]uint8
 
 	for _, field := range conv.Fields {
 		if dbg {
@@ -336,7 +336,7 @@ func convert2CAN(topic, payload string) can.Frame {
 		Flags:  0,
 		Res0:   0,
 		Res1:   0,
-		Data:   [8]uint8{},
+		Data:   [24]uint8{},
 	}
 	canidnr, err := strconv.ParseUint(canid, 0, 32)
 	if err != nil {
