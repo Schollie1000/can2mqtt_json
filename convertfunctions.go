@@ -11,10 +11,10 @@ import (
 	"math"
 	"strings"
 
-	"github.com/brutella/can"
+	"github.com/Schollie1000/can"
 )
 
-func getPayloadconv(config *Config, id string, mode string) (*Payload, string) {
+func getPayloadconv(config *Config, id string, mode string) (*Payload, string, int) {
 	var tmode []Conversion
 	var id_compare string
 	if mode == "can2mqtt" {
@@ -24,7 +24,7 @@ func getPayloadconv(config *Config, id string, mode string) (*Payload, string) {
 		tmode = config.Mqtt2can
 		//id_compare = conversion.Topic
 	} else {
-		return nil, ""
+		return nil, "", 0
 	}
 
 	for _, conversion := range tmode {
@@ -51,9 +51,9 @@ func getPayloadconv(config *Config, id string, mode string) (*Payload, string) {
 				payload.Fields = append(payload.Fields, payloadField)
 			}
 			if mode == "can2mqtt" {
-				return &payload, conversion.Topic
+				return &payload, conversion.Topic, conversion.Length
 			} else {
-				return &payload, conversion.CanID
+				return &payload, conversion.CanID, conversion.Length
 			}
 		}
 	}
@@ -66,13 +66,13 @@ func getPayloadconv(config *Config, id string, mode string) (*Payload, string) {
 		Factor: 0,
 	}
 	errorPay.Fields = append(errorPay.Fields, errorField)
-	return &errorPay, ""
+	return &errorPay, "", 0
 }
 
 func convert2MQTT(id int, length int, payload [24]byte) mqtt_response {
 	idStr := fmt.Sprintf("0x%X", id)
 	fmt.Printf("id = %s\n", idStr)
-	conv, topic := getPayloadconv(&config, idStr, "can2mqtt")
+	conv, topic, length := getPayloadconv(&config, idStr, "can2mqtt")
 	retstr := "{"
 	var valstring string
 	for _, field := range conv.Fields {
@@ -203,7 +203,7 @@ func convert2MQTT(id int, length int, payload [24]byte) mqtt_response {
 
 // func convert2CAN(topic, payload string) CAN.CANFrame {
 func convert2CAN(topic, payload string) can.Frame {
-	conv, canid := getPayloadconv(&config, topic, "mqtt2can")
+	conv, canid, length := getPayloadconv(&config, topic, "mqtt2can")
 
 	fmt.Println(conv)
 	//var data map[string]json.RawMessage
@@ -330,19 +330,24 @@ func convert2CAN(topic, payload string) can.Frame {
 
 		}
 	}
-	return_frame := can.Frame{
-		ID:     0xFF,
-		Length: 8,
-		Flags:  0,
-		Res0:   0,
-		Res1:   0,
-		Data:   [24]uint8{},
-	}
+	/*
+		return_frame := can.Frame{
+			ID:     0xFF,
+			Length: 8,
+			Flags:  0,
+			Res0:   0,
+			Res1:   0,
+			Data:   [24]uint8{},
+		}*/
 	canidnr, err := strconv.ParseUint(canid, 0, 32)
 	if err != nil {
 		fmt.Println(err)
 	}
-	return_frame.ID = uint32(canidnr)
-	return_frame.Data = buffer
+	/*
+		return_frame.ID = uint32(canidnr)
+		return_frame.Data = buffer
+		return return_frame
+	*/
+	return_frame := can.Frame{ID: uint32(canidnr), Length: uint8(length), Data: buffer}
 	return return_frame
 }
