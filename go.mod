@@ -3,7 +3,7 @@ module github.com/Schollie1000/can2mqtt_json
 go 1.19
 
 require (
-	github.com/brutella/can v0.0.2
+	github.com/Schollie1000/can v0.0.0
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 )
 

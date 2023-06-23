@@ -3,7 +3,7 @@ package can2mqtt_json
 import (
 	"fmt"
 
-	"github.com/brutella/can"
+	"github.com/Schollie1000/can"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
