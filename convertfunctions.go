@@ -11,10 +11,10 @@ import (
 	"math"
 	"strings"
 
-	"github.com/Schollie1000/can"
+	"github.com/brutella/can"
 )
 
-func getPayloadconv(config *Config, id string, mode string) (*Payload, string, int) {
+func getPayloadconv(config *Config, id string, mode string) (*Payload, string) {
 	var tmode []Conversion
 	var id_compare string
 	if mode == "can2mqtt" {
@@ -24,7 +24,7 @@ func getPayloadconv(config *Config, id string, mode string) (*Payload, string, i
 		tmode = config.Mqtt2can
 		//id_compare = conversion.Topic
 	} else {
-		return nil, "", 0
+		return nil, ""
 	}
 
 	for _, conversion := range tmode {
@@ -51,9 +51,9 @@ func getPayloadconv(config *Config, id string, mode string) (*Payload, string, i
 				payload.Fields = append(payload.Fields, payloadField)
 			}
 			if mode == "can2mqtt" {
-				return &payload, conversion.Topic, conversion.Length
+				return &payload, conversion.Topic
 			} else {
-				return &payload, conversion.CanID, conversion.Length
+				return &payload, conversion.CanID
 			}
 		}
 	}
@@ -66,13 +66,13 @@ func getPayloadconv(config *Config, id string, mode string) (*Payload, string, i
 		Factor: 0,
 	}
 	errorPay.Fields = append(errorPay.Fields, errorField)
-	return &errorPay, "", 0
+	return &errorPay, ""
 }
 
-func convert2MQTT(id int, length int, payload [24]byte) mqtt_response {
+func convert2MQTT(id int, length int, payload [8]byte) mqtt_response {
 	idStr := fmt.Sprintf("0x%X", id)
 	fmt.Printf("id = %s\n", idStr)
-	conv, topic, length := getPayloadconv(&config, idStr, "can2mqtt")
+	conv, topic := getPayloadconv(&config, idStr, "can2mqtt")
 	retstr := "{"
 	var valstring string
 	for _, field := range conv.Fields {
@@ -152,7 +152,7 @@ func convert2MQTT(id int, length int, payload [24]byte) mqtt_response {
 			if dbg {
 				fmt.Printf(" sub  %x %x %x %x\n", sub[0], sub[1], sub[2], sub[3])
 			}
-			data2 := int32(sub[3]) | int32(sub[2])<<8 | int32(sub[1])<<16 | int32(sub[0])<<24
+			data2 := int32(sub[0]) | int32(sub[1])<<8 | int32(sub[2])<<16 | int32(sub[3])<<24
 
 			tmpf := field.Factor * float64(data2)
 
@@ -166,7 +166,7 @@ func convert2MQTT(id int, length int, payload [24]byte) mqtt_response {
 			if dbg {
 				fmt.Printf(" sub  %x %x %x %x\n", sub[0], sub[1], sub[2], sub[3])
 			}
-			data2 := uint32(sub[3]) | uint32(sub[2])<<8 | uint32(sub[1])<<16 | uint32(sub[0])<<24
+			data2 := uint32(sub[0]) | uint32(sub[1])<<8 | uint32(sub[2])<<16 | uint32(sub[3])<<24
 
 			tmpf := field.Factor * float64(data2)
 
@@ -203,7 +203,7 @@ func convert2MQTT(id int, length int, payload [24]byte) mqtt_response {
 
 // func convert2CAN(topic, payload string) CAN.CANFrame {
 func convert2CAN(topic, payload string) can.Frame {
-	conv, canid, length := getPayloadconv(&config, topic, "mqtt2can")
+	conv, canid := getPayloadconv(&config, topic, "mqtt2can")
 
 	fmt.Println(conv)
 	//var data map[string]json.RawMessage
@@ -213,7 +213,7 @@ func convert2CAN(topic, payload string) can.Frame {
 		fmt.Println(err)
 	}
 
-	var buffer [24]uint8
+	var buffer [8]uint8
 
 	for _, field := range conv.Fields {
 		if dbg {
@@ -235,8 +235,6 @@ func convert2CAN(topic, payload string) can.Frame {
 					for i := 0; i < len(b); i++ {
 						buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
 					}
-				} else if field.Type == "unixtime" {
-					// do nothing
 				} else {
 					f, ok := value.(float64)
 
@@ -330,24 +328,19 @@ func convert2CAN(topic, payload string) can.Frame {
 
 		}
 	}
-	/*
-		return_frame := can.Frame{
-			ID:     0xFF,
-			Length: 8,
-			Flags:  0,
-			Res0:   0,
-			Res1:   0,
-			Data:   [24]uint8{},
-		}*/
+	return_frame := can.Frame{
+		ID:     0xFF,
+		Length: 8,
+		Flags:  0,
+		Res0:   0,
+		Res1:   0,
+		Data:   [8]uint8{},
+	}
 	canidnr, err := strconv.ParseUint(canid, 0, 32)
 	if err != nil {
 		fmt.Println(err)
 	}
-	/*
-		return_frame.ID = uint32(canidnr)
-		return_frame.Data = buffer
-		return return_frame
-	*/
-	return_frame := can.Frame{ID: uint32(canidnr), Length: uint8(length), Data: buffer}
+	return_frame.ID = uint32(canidnr)
+	return_frame.Data = buffer
 	return return_frame
 }
