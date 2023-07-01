@@ -7,7 +7,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/Schollie1000/can"
+	"github.com/brutella/can"
 )
 
 var csi []uint32       // subscribed IDs slice

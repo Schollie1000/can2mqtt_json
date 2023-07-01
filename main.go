@@ -28,7 +28,7 @@ type Frame struct {
 	Flags  uint8
 	Res0   uint8
 	Res1   uint8
-	Data   [24]uint8 // max size 24 byte !!! was 8 byte !!! hier für CAN FD -> max Framelength angeben  TODO
+	Data   [8]uint8 // !!! hier für CAN FD -> max Framelength angeben  TODO
 }
 
 // Conversion Method

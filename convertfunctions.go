@@ -152,7 +152,7 @@ func convert2MQTT(id int, length int, payload [8]byte) mqtt_response {
 			if dbg {
 				fmt.Printf(" sub  %x %x %x %x\n", sub[0], sub[1], sub[2], sub[3])
 			}
-			data2 := int32(sub[0]) | int32(sub[1])<<8 | int32(sub[2])<<16 | int32(sub[3])<<24
+			data2 := int32(sub[3]) | int32(sub[2])<<8 | int32(sub[1])<<16 | int32(sub[0])<<24
 
 			tmpf := field.Factor * float64(data2)
 
@@ -166,7 +166,7 @@ func convert2MQTT(id int, length int, payload [8]byte) mqtt_response {
 			if dbg {
 				fmt.Printf(" sub  %x %x %x %x\n", sub[0], sub[1], sub[2], sub[3])
 			}
-			data2 := uint32(sub[0]) | uint32(sub[1])<<8 | uint32(sub[2])<<16 | uint32(sub[3])<<24
+			data2 := uint32(sub[3]) | uint32(sub[2])<<8 | uint32(sub[1])<<16 | uint32(sub[0])<<24
 
 			tmpf := field.Factor * float64(data2)
 
@@ -235,6 +235,8 @@ func convert2CAN(topic, payload string) can.Frame {
 					for i := 0; i < len(b); i++ {
 						buffer[i+field.Place[0]] = b[i] // write b into data starting at byte 2
 					}
+				} else if field.Type == "unixtime" {
+					// do nothing
 				} else {
 					f, ok := value.(float64)
 
